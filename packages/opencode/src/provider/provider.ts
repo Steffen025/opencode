@@ -1320,6 +1320,22 @@ export namespace Provider {
     }
   }
 
+  export type ModelTier = "quick" | "standard" | "advanced"
+
+  export type ModelReference = {
+    modelID: string
+    providerID: string
+    variant?: string
+  }
+
+  export function parseTierConfig(tierConfig: { model: string; variant?: string }): ModelReference {
+    const parsed = parseModel(tierConfig.model)
+    return {
+      ...parsed,
+      variant: tierConfig.variant,
+    }
+  }
+
   export const ModelNotFoundError = NamedError.create(
     "ProviderModelNotFoundError",
     z.object({
