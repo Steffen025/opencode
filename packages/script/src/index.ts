@@ -32,7 +32,16 @@ const IS_PREVIEW = CHANNEL !== "latest"
 
 const VERSION = await (async () => {
   if (env.OPENCODE_VERSION) return env.OPENCODE_VERSION
-  if (IS_PREVIEW) return `0.0.0-${CHANNEL}-${new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "")}`
+  
+  // PAI-OpenCode: For preview builds, use upstream version from package.json + branch + git hash
+  if (IS_PREVIEW) {
+    const pkgPath = path.resolve(import.meta.dir, "../../opencode/package.json")
+    const pkg = await Bun.file(pkgPath).json()
+    const upstreamVersion = pkg.version || "unknown"
+    const shortHash = await $`git rev-parse --short HEAD`.text().then(x => x.trim())
+    return `${upstreamVersion}-${CHANNEL}-${shortHash}`
+  }
+  
   const version = await fetch("https://registry.npmjs.org/opencode-ai/latest")
     .then((res) => {
       if (!res.ok) throw new Error(res.statusText)
